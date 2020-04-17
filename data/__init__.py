@@ -1,1 +1,1 @@
-from .VOC import VOCData
+from .VOC import *

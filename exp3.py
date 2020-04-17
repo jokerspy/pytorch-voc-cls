@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 USER_DIR = '/users/im64/'
 VOC_DIR = USER_DIR + 'VOC_yolo'
-post_fix = 'experiment_2'
+post_fix = 'experiment_3'
 try:
 	os.mkdir('snapshot/%s'%post_fix)
 except:
@@ -30,7 +30,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 #alex_net = AlexNet().to(device)
 alex_net = models.alexnet(pretrained=True)
-for param in alex_net.parameters():
+for param in alex_net.features.parameters():
 	param.requires_grad = False
 alex_net.classifier[-1] = nn.Linear(4096, 20)
 alex_net.to(device)
@@ -84,7 +84,7 @@ def get_mAP(gts, scr):
 	return np.mean(aps), aps
 
 criterion = nn.BCEWithLogitsLoss(reduction='sum')
-optimizer = optim.SGD(alex_net.classifier[-1].parameters(), lr=1.5e-4, momentum=0.9, weight_decay=5e-6)
+optimizer = optim.SGD(alex_net.classifier.parameters(), lr=1.5e-4, momentum=0.9, weight_decay=5e-6)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, verbose=True, cooldown=2)
 #optimizer = optim.SGD([   
 #        {'params': list(alex_net.parameters())[:-1], 'lr': 1.5e-4, 'momentum': 0.9},
@@ -97,10 +97,10 @@ for epoch in range(100):  # loop over the dataset multiple times
 	valid_loss = 0.0
 	n_img = 0
 	alex_net.train()
-	if epoch == 40:
-		for param in alex_net.classifier.parameters():
+	if epoch == 20:
+		for param in alex_net.features.parameters():
 			param.requires_grad = True
-		optimizer = optim.SGD(alex_net.classifier.parameters(), lr=1.5e-4, momentum=0.9, weight_decay=5e-6)
+		optimizer = optim.SGD(alex_net.parameters(), lr=1.5e-5, momentum=0.9, weight_decay=5e-7)
 	cnt = sum(p.numel() for p in alex_net.parameters() if p.requires_grad)
 	print('Learnable params: %d'%cnt)
 	gts, scr = np.ndarray([0, len(VOCData.categories)]), np.ndarray([0, len(VOCData.categories)])

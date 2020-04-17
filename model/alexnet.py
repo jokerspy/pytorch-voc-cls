@@ -15,15 +15,19 @@ class AlexNet(nn.Module):
 		self.fc7 = nn.Linear(4096, 4096)
 		self.fc8 = nn.Linear(4096, 20)
 
-	def forward(self, x, training = False):
+	def forward(self, x):
 		x = F.max_pool2d(F.local_response_norm(F.relu(self.conv1(x)), 5, k = 2), 3, stride = 2)
 		x = F.max_pool2d(F.local_response_norm(F.relu(self.conv2(x)), 5, k = 2), 3, stride = 2)
+		#x = F.max_pool2d(F.batch_norm(F.relu(self.conv1(x)), running_mean=None, running_var=None, eps=1e-05, momentum=0.1, training=True), 3, stride = 2)
+		#x = F.max_pool2d(F.batch_norm(F.relu(self.conv2(x)), running_mean=None, running_var=None, eps=1e-05, momentum=0.1, training=True), 3, stride = 2)
 		x = F.relu(self.conv3(x))
 		x = F.relu(self.conv4(x))
 		x = F.max_pool2d(F.relu(self.conv5(x)), 3, stride = 2)
 		x = x.view(-1, self.num_flat_features(x))
-		x = F.relu(F.dropout(self.fc6(x), training = training))
-		x = F.relu(F.dropout(self.fc7(x), training = training))
+		#x = F.relu(F.dropout(self.fc6(x)))
+		#x = F.relu(F.dropout(self.fc7(x)))
+		x = F.dropout3d(F.relu(self.fc6(x)))
+		x = F.dropout3d(F.relu(self.fc7(x)))
 		x = self.fc8(x)
 		return x
 
